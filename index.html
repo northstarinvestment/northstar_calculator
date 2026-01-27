@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property ROI Calculator - Northstar</title>
+    <!-- Import Libre Baskerville Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Northstar Color Palette */
+            --primary: #1e3d32;       /* Deep Dark Green */
+            --secondary: #4a7c6e;     /* Medium Teal Green */
+            --accent: #7fb069;        /* Bright Green */
+            --accent-hover: #6a9e55;  
+            --bg: #f4f7f6;            /* Very Light Grey/Blue tint */
+            --card-bg: #ffffff;
+            --text: #1a1a1a;          /* Almost Black */
+            --border: #dce1e3;        /* Light Grey Border */
+            --readonly-bg: #f1f5f4;   /* Greyish background for calculated fields */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Libre Baskerville', serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        /* Layout & Containers */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 50px;
+            box-shadow: 0 5px 25px rgba(30, 61, 50, 0.08);
+            border-radius: 8px;
+            border-top: 5px solid var(--accent);
+        }
+
+        /* Header & Logo Styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-main {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            color: var(--accent);
+            font-size: 24px;
+        }
+
+        .logo-sub {
+            font-family: sans-serif; /* Keep subtitle cleaner sans-serif or smaller serif */
+            font-size: 10px;
+            font-weight: 700;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+            padding-left: 36px; /* Align with text after icon */
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+            background-color: var(--accent);
+            color: var(--primary);
+        }
+        
+        .btn-sm:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        /* Form Grid */
+        .property-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            color: #777;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: sans-serif;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 15px;
+            font-family: 'Libre Baskerville', serif;
+            color: var(--primary);
+            background-color: #fafafa;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(127, 176, 105, 0.1);
+        }
+
+        /* Tables */
+        .section-title {
+            font-size: 20px;
+            color: var(--primary);
+            margin: 40px 0 20px 0;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 700;
+            position: relative;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            font-family: sans-serif;
+        }
+
+        /* Table Inputs */
+        td input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-family: 'Libre Baskerville', serif;
+            background: transparent;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        td input:hover, td input:focus {
+            background: white;
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        /* Readonly/Auto Calculated Inputs */
+        input.auto-calc {
+            background-color: var(--readonly-bg);
+            color: #555;
+            font-style: italic;
+            cursor: default;
+            border: 1px solid transparent !important;
+        }
+        
+        input.auto-calc:focus {
+            outline: none;
+            background-color: #e8ecec;
+        }
+
+        /* Column Widths */
+        .col-desc { width: 35%; }
+        .col-rate { width: 15%; }
+        .col-amount { width: 15%; }
+        .col-action { width: 40px; }
+
+        /* Action Buttons inside table */
+        .delete-btn {
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            border: none;
+            background: none;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .delete-btn:hover {
+            color: #e74c3c;
+        }
+
+        .add-row-btn {
+            background: none;
+            border: 1px dashed var(--secondary);
+            color: var(--secondary);
+            width: 100%;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 0 0 6px 6px;
+            font-size: 13px;
+            font-family: sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+
+        .add-row-btn:hover {
+            background: rgba(74, 124, 110, 0.05);
+            color: var(--primary);
+        }
+
+        /* Totals Area */
+        .totals-area {
+            background-color: var(--primary);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(30, 61, 50, 0.2);
+        }
+
+        .total-label {
+            font-size: 16px;
+            font-weight: 400;
+            font-family: 'Libre Baskerville', serif;
+        }
+
+        .total-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* ROI Section */
+        .roi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .roi-grid { grid-template-columns: 1fr; }
+            .col-rate { width: 20%; }
+            .col-amount { width: 20%; }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+
+        .roi-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 6px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .roi-card h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: var(--primary);
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .roi-result {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: right;
+            color: var(--primary);
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; border: none; }
+            .no-print, .delete-btn, .add-row-btn { display: none !important; }
+            input { border: none !important; padding: 0 !important; background: transparent !important; width: auto !important; color: black !important; }
+            td, th { border: 1px solid #000; padding: 5px; color: black !important; }
+            .totals-area { background: none; color: black; border: 2px solid #000; box-shadow: none; padding: 10px; }
+            .total-amount { color: black; }
+            th { background-color: #f0f0f0 !important; color: black !important; -webkit-print-color-adjust: exact; }
+            .section-title { border-left-color: #000; }
+            .roi-card { border: 1px solid #000; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="brand-logo">
+            <div class="logo-main">
+                NORTHSTAR <span class="logo-icon">★</span>
+            </div>
+            <span class="logo-sub">Investment & Asset Management</span>
+        </div>
+        <button class="btn no-print" onclick="window.print()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+            Download / Print PDF
+        </button>
+    </header>
+
+    <!-- 1. Project Info -->
+    <div class="section-title">Property Details</div>
+    <div class="property-info">
+        <div class="form-group">
+            <label>Project Name</label>
+            <input type="text" id="projectName" value="Blue Zone">
+        </div>
+        <div class="form-group">
+            <label>Property Type</label>
+            <input type="text" id="propertyType" value="Apartment 1+1">
+        </div>
+        <div class="form-group">
+            <label>Covered Area (m²)</label>
+            <input type="number" id="area" value="53">
+        </div>
+        <div class="form-group">
+            <label>Apartment Price (£)</label>
+            <input type="number" id="apartmentPrice" value="168000" oninput="calculateAll()">
+        </div>
+    </div>
+
+    <!-- 2. One Time Payments -->
+    <div class="section-title">
+        Additional Government and Extra Services Fees
+    </div>
+    <div class="table-wrapper">
+        <table id="oneTimeTable">
+            <thead>
+                <tr>
+                    <th class="col-desc">Description</th>
+                    <th class="col-rate">Rate (%)</th>
+                    <th class="col-amount">Amount (£)</th>
+                    <th class="col-action no-print"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Percent Rows (First 4) -->
+                <tr class="percent-row">
+                    <td><input type="text" value="VAT"></td>
+                    <td><input type="number" class="pct-input" value="5" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr class="percent-row">
+                    <td><input type="text" value="Contract Registration Tax"></td>
+                    <td><input type="number" class="pct-input" value="6" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr class="percent-row">
+                    <td><input type="text" value="Stamp Duty Tax"></td>
+                    <td><input type="number" class="pct-input" value="0.5" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr class="percent-row">
+                    <td><input type="text" value="Title Deed Transfer"></td>
+                    <td><input type="number" class="pct-input" value="3" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+
+                <!-- Fixed Amount Rows -->
+                <tr>
+                    <td><input type="text" value="Lawyer Fee"></td>
+                    <td><input type="text" value="-" disabled style="border:none; background:transparent; text-align:center; color:#ccc;"></td>
+                    <td><input type="number" class="amt-input" value="3000" oninput="calculateAll()"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="Design Package"></td>
+                    <td><input type="text" value="-" disabled style="border:none; background:transparent; text-align:center; color:#ccc;"></td>
+                    <td><input type="number" class="amt-input" value="0" oninput="calculateAll()"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="Trafo"></td>
+                    <td><input type="text" value="-" disabled style="border:none; background:transparent; text-align:center; color:#ccc;"></td>
+                    <td><input type="number" class="amt-input" value="2500" oninput="calculateAll()"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="Electricity Meter"></td>
+                    <td><input type="text" value="-" disabled style="border:none; background:transparent; text-align:center; color:#ccc;"></td>
+                    <td><input type="number" class="amt-input" value="1000" oninput="calculateAll()"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="Water Meter"></td>
+                    <td><input type="text" value="-" disabled style="border:none; background:transparent; text-align:center; color:#ccc;"></td>
+                    <td><input type="number" class="amt-input" value="1000" oninput="calculateAll()"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr style="background-color: #fcfcfc; font-weight:bold;">
+                    <td colspan="2">Total One Time Payments</td>
+                    <td id="oneTimeTotal">£0</td>
+                    <td class="no-print"></td>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="add-row-btn no-print" onclick="addOneTimeRow()">+ Add Manual Fee Item</button>
+    </div>
+
+    <!-- 3. Yearly Payments -->
+    <div class="section-title">
+        Yearly Payments
+    </div>
+    <div class="table-wrapper">
+        <table id="yearlyTable">
+            <thead>
+                <tr>
+                    <th class="col-desc">Description</th>
+                    <th class="col-rate">Monthly Price (£)</th>
+                    <th class="col-amount">Yearly Amount (£)</th>
+                    <th class="col-action no-print"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" value="Maintenance Fee"></td>
+                    <td><input type="number" class="monthly-input" value="100" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="Communal Expenses"></td>
+                    <td><input type="number" class="monthly-input" value="80" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="Municipality Fee"></td>
+                    <td><input type="number" class="monthly-input" value="11" oninput="calculateAll()"></td>
+                    <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+                    <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr style="background-color: #fcfcfc; font-weight:bold;">
+                    <td colspan="2">Total Yearly Payments</td>
+                    <td id="yearlyTotal">£0</td>
+                    <td class="no-print"></td>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="add-row-btn no-print" onclick="addYearlyRow()">+ Add Monthly Fee Item</button>
+    </div>
+
+    <!-- 4. Grand Total -->
+    <div class="totals-area">
+        <div class="total-label">Total Amount to be Paid (Investment Cost)</div>
+        <div class="total-amount" id="grandTotal">£0</div>
+    </div>
+
+    <!-- 5. ROI Calculation -->
+    <div class="section-title">ROI Calculation for Investor</div>
+    <p style="color: #666; margin-bottom: 20px; font-style: italic;">Rental Income and ROI Estimates</p>
+    
+    <div class="roi-grid">
+        <!-- Pessimistic -->
+        <div class="roi-card">
+            <h3>Pessimistic Scenario</h3>
+            <div class="form-group">
+                <label>Short Term Rental Price (£ / night)</label>
+                <input type="number" id="pessPrice" value="100" oninput="calculateAll()">
+            </div>
+            <div class="form-group">
+                <label>Nights per year</label>
+                <input type="number" id="pessNights" value="180" oninput="calculateAll()">
+            </div>
+            <div class="form-group">
+                <label>Rental Management Fee (%)</label>
+                <input type="number" id="pessFeePercent" value="30" oninput="calculateAll()">
+            </div>
+            <div style="margin-top:20px; font-size: 13px; color:#555;">
+                Gross Income: <span id="pessGross">£0</span><br>
+                Net Income: <strong id="pessNet">£0</strong>
+            </div>
+            <div class="roi-result">
+                <span id="pessRoi">0</span>%
+            </div>
+        </div>
+
+        <!-- Realistic -->
+        <div class="roi-card">
+            <h3>Realistic Scenario</h3>
+            <div class="form-group">
+                <label>Short Term Rental Price (£ / night)</label>
+                <input type="number" id="realPrice" value="130" oninput="calculateAll()">
+            </div>
+            <div class="form-group">
+                <label>Nights per year</label>
+                <input type="number" id="realNights" value="220" oninput="calculateAll()">
+            </div>
+            <div class="form-group">
+                <label>Rental Management Fee (%)</label>
+                <input type="number" id="realFeePercent" value="30" oninput="calculateAll()">
+            </div>
+            <div style="margin-top:20px; font-size: 13px; color:#555;">
+                Gross Income: <span id="realGross">£0</span><br>
+                Net Income: <strong id="realNet">£0</strong>
+            </div>
+            <div class="roi-result">
+                <span id="realRoi">0</span>%
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Helper Functions ---
+    
+    function formatCurrency(num) {
+        return '£' + Number(num).toLocaleString('en-GB', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+
+    // --- One Time Table Logic ---
+    
+    function addOneTimeRow() {
+        const table = document.getElementById('oneTimeTable');
+        const tbody = table.querySelector('tbody');
+        
+        const newRow = document.createElement('tr');
+        // Manual Row structure (no percentage calc)
+        newRow.innerHTML = `
+            <td><input type="text" placeholder="Item Name"></td>
+            <td><input type="text" value="-" disabled style="border:none; background:transparent; text-align:center; color:#ccc;"></td>
+            <td><input type="number" class="amt-input" value="0" oninput="calculateAll()"></td>
+            <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+        `;
+        tbody.appendChild(newRow);
+    }
+
+    function calculateOneTimeTable() {
+        const apartmentPrice = parseFloat(document.getElementById('apartmentPrice').value) || 0;
+        const table = document.getElementById('oneTimeTable');
+        const rows = table.querySelectorAll('tbody tr');
+        let total = 0;
+
+        rows.forEach(row => {
+            // Check if this is a percentage row
+            const isPercentRow = row.classList.contains('percent-row');
+            
+            if (isPercentRow) {
+                const pctInput = row.querySelector('.pct-input');
+                const amtInput = row.querySelector('.amt-input');
+                const pct = parseFloat(pctInput.value) || 0;
+                
+                // Calculate Amount = (Price * Pct) / 100
+                const calcAmount = (apartmentPrice * pct) / 100;
+                amtInput.value = calcAmount.toFixed(2); // Update UI
+                
+                total += calcAmount;
+            } else {
+                // Manual Amount Row
+                const amtInput = row.querySelector('.amt-input');
+                const val = parseFloat(amtInput.value) || 0;
+                total += val;
+            }
+        });
+
+        document.getElementById('oneTimeTotal').innerText = formatCurrency(total);
+        return total;
+    }
+
+    // --- Yearly Table Logic ---
+
+    function addYearlyRow() {
+        const table = document.getElementById('yearlyTable');
+        const tbody = table.querySelector('tbody');
+        
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td><input type="text" placeholder="Item Name"></td>
+            <td><input type="number" class="monthly-input" value="0" oninput="calculateAll()"></td>
+            <td><input type="number" class="auto-calc amt-input" readonly value="0"></td>
+            <td class="row-action no-print"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+        `;
+        tbody.appendChild(newRow);
+    }
+
+    function calculateYearlyTable() {
+        const table = document.getElementById('yearlyTable');
+        const rows = table.querySelectorAll('tbody tr');
+        let total = 0;
+
+        rows.forEach(row => {
+            const monthlyInput = row.querySelector('.monthly-input');
+            const amtInput = row.querySelector('.amt-input');
+            
+            const monthly = parseFloat(monthlyInput.value) || 0;
+            const yearly = monthly * 12;
+            
+            amtInput.value = yearly.toFixed(2); // Update UI
+            total += yearly;
+        });
+
+        document.getElementById('yearlyTotal').innerText = formatCurrency(total);
+        return total;
+    }
+
+    // --- General Table Functions ---
+
+    function deleteRow(btn) {
+        const row = btn.closest('tr');
+        row.remove();
+        calculateAll();
+    }
+
+    // --- Main Calculation Logic ---
+
+    function calculateAll() {
+        // 1. Get Apartment Price
+        const price = parseFloat(document.getElementById('apartmentPrice').value) || 0;
+
+        // 2. Calculate One Time Fees (Handles Percent vs Manual automatically)
+        const oneTimeTotal = calculateOneTimeTable();
+
+        // 3. Calculate Yearly Fees (Handles Monthly * 12 automatically)
+        const yearlyTotal = calculateYearlyTable();
+
+        // 4. Grand Total
+        const grandTotal = price + oneTimeTotal + yearlyTotal;
+        document.getElementById('grandTotal').innerText = formatCurrency(grandTotal);
+
+        // 5. ROI Calculations
+        calculateROI('pess', grandTotal);
+        calculateROI('real', grandTotal);
+    }
+
+    function calculateROI(type, totalInvestment) {
+        const pricePerNight = parseFloat(document.getElementById(`${type}Price`).value) || 0;
+        const nights = parseFloat(document.getElementById(`${type}Nights`).value) || 0;
+        const feePercent = parseFloat(document.getElementById(`${type}FeePercent`).value) || 0;
+
+        const grossIncome = pricePerNight * nights;
+        const feeAmount = grossIncome * (feePercent / 100);
+        const netIncome = grossIncome - feeAmount;
+
+        let roi = 0;
+        if (totalInvestment > 0) {
+            roi = (netIncome / totalInvestment) * 100;
+        }
+
+        document.getElementById(`${type}Gross`).innerText = formatCurrency(grossIncome);
+        document.getElementById(`${type}Net`).innerText = formatCurrency(netIncome);
+        document.getElementById(`${type}Roi`).innerText = roi.toFixed(1);
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+        calculateAll();
+    });
+
+</script>
+
+</body>
+</html>
