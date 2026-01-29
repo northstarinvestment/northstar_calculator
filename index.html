@@ -644,9 +644,12 @@
                 
                 // Calculate Amount = (Price * Pct) / 100
                 const calcAmount = (apartmentPrice * pct) / 100;
-                amtInput.value = calcAmount.toFixed(2); // Update UI
                 
-                total += calcAmount;
+                // CHANGED: Use Math.round for whole numbers
+                const roundedAmount = Math.round(calcAmount);
+                
+                amtInput.value = roundedAmount; // Update UI
+                total += roundedAmount;
             } else {
                 // Manual Amount Row
                 const amtInput = row.querySelector('.amt-input');
@@ -687,8 +690,11 @@
             const monthly = parseFloat(monthlyInput.value) || 0;
             const yearly = monthly * 12;
             
-            amtInput.value = yearly.toFixed(2); // Update UI
-            total += yearly;
+            // CHANGED: Use Math.round for whole numbers
+            const roundedYearly = Math.round(yearly);
+            
+            amtInput.value = roundedYearly; // Update UI
+            total += roundedYearly;
         });
 
         document.getElementById('yearlyTotal').innerText = formatCurrency(total);
@@ -740,6 +746,7 @@
 
         document.getElementById(`${type}Gross`).innerText = formatCurrency(grossIncome);
         document.getElementById(`${type}Net`).innerText = formatCurrency(netIncome);
+        // CHANGED: .toFixed(0) for whole numbers instead of decimals
         document.getElementById(`${type}Roi`).innerText = roi.toFixed(1);
     }
 
